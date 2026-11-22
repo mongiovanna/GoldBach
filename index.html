@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1e1b4b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goldbach">
+<meta name="description" content="Il Gioco di Goldbach – Ideato dal Professore Giancarlo Palomba, realizzato dalla Professoressa Giovanna Montanaro.">
+<title>Il Gioco di Goldbach</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f472b6'/%3E%3Cstop offset='1' stop-color='%236366f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-size='26' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3Ep+q%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%236366f1'/%3E%3Ctext x='32' y='42' font-size='26' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3Ep+q%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
+  --surface:rgba(255,255,255,.08); --surface-2:rgba(255,255,255,.14); --stroke:rgba(255,255,255,.16);
+  --text:#ffffff; --muted:rgba(255,255,255,.72);
+  --pink:#f472b6; --violet:#8b5cf6; --indigo:#6366f1; --cyan:#22d3ee; --amber:#fbbf24;
+  --ok:#34d399; --ko:#fb7185;
+  --grad:linear-gradient(135deg,#f472b6 0%,#8b5cf6 50%,#22d3ee 100%);
+  --grad-btn:linear-gradient(135deg,#ec4899,#8b5cf6);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --radius:22px;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg1:#eef2ff; --bg2:#fae8ff; --bg3:#e0f2fe;
+    --surface:rgba(255,255,255,.75); --surface-2:rgba(255,255,255,.95); --stroke:rgba(99,102,241,.18);
+    --text:#1e1b4b; --muted:#4c4a75;
+    --ok:#059669; --ko:#e11d48;
+    --shadow:0 10px 30px rgba(76,29,149,.12);
+  }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text);
+  font-family:system-ui,-apple-system,"SF Pro Rounded","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:radial-gradient(1200px 600px at 10% -10%,var(--bg2),transparent 60%),
+             radial-gradient(900px 600px at 110% 110%,var(--bg3),transparent 60%), var(--bg1);
+  background-attachment:fixed;
+  display:flex; justify-content:center; align-items:center;
+  overscroll-behavior:none;
+}
+.phone{position:relative; width:100%; height:100dvh; max-width:440px; display:flex; flex-direction:column; overflow:hidden}
+@media (min-width:600px) and (min-height:760px){
+  .phone{
+    height:min(900px,94vh); border-radius:44px; border:10px solid #0b0b12;
+    box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.06);
+    background:radial-gradient(600px 400px at 0% 0%,var(--bg2),transparent 70%),var(--bg1);
+  }
+  .phone::before{content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%); width:110px; height:28px; background:#0b0b12; border-radius:20px; z-index:30}
+  .appbar{padding-top:44px !important}
+}
+.blob{position:absolute; border-radius:50%; filter:blur(50px); opacity:.45; pointer-events:none; z-index:0}
+.blob.b1{width:240px; height:240px; background:var(--pink); top:-80px; right:-80px}
+.blob.b2{width:260px; height:260px; background:var(--cyan); bottom:60px; left:-120px; opacity:.25}
+
+.appbar{position:relative; z-index:5; display:flex; align-items:center; gap:12px; padding:calc(env(safe-area-inset-top) + 14px) 18px 12px}
+.logo{width:44px; height:44px; border-radius:14px; background:var(--grad); display:grid; place-items:center; font-weight:900; color:#fff; font-size:.95rem; box-shadow:0 6px 18px rgba(236,72,153,.45); flex:0 0 auto}
+.appbar .t{min-width:0}
+.appbar h1{margin:0; font-size:1.15rem; font-weight:800; letter-spacing:.2px}
+.appbar p{margin:0; font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.iconbtn{margin-left:auto; width:42px; height:42px; border-radius:14px; border:1px solid var(--stroke); background:var(--surface); color:var(--text); font-size:1.15rem; cursor:pointer; flex:0 0 auto}
+
+main{position:relative; z-index:2; flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:4px 16px 18px; display:flex; flex-direction:column}
+.screen{animation:enter .35s ease both}
+@keyframes enter{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+.hidden{display:none !important}
+.card{background:var(--surface); border:1px solid var(--stroke); border-radius:var(--radius); padding:16px; margin-bottom:14px; box-shadow:var(--shadow); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px)}
+h2{margin:0 0 10px; font-size:1.15rem}
+h3{margin:14px 0 6px; font-size:1rem}
+p,li{line-height:1.55}
+ul{padding-left:20px; margin:6px 0}
+
+.hero{text-align:center; padding:22px 16px 18px; position:relative; overflow:hidden}
+.hero .big{width:96px; height:96px; margin:0 auto 12px; border-radius:30px; background:var(--grad); display:grid; place-items:center; color:#fff; font-size:1.9rem; font-weight:900; box-shadow:0 14px 34px rgba(139,92,246,.5); animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(-3deg)}}
+.hero h2{font-size:1.6rem; margin:0; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:900}
+.hero .formula{margin:8px 0 0; font-weight:700; color:var(--muted)}
+
+.lbl{font-size:.78rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin:14px 0 8px}
+.lbl:first-child{margin-top:0}
+.seg{display:flex; gap:6px; background:var(--surface-2); border:1px solid var(--stroke); padding:5px; border-radius:16px; flex-wrap:wrap}
+.seg label{flex:1 1 0; min-width:0; position:relative; cursor:pointer}
+.seg input{position:absolute; opacity:0; inset:0; margin:0; cursor:pointer}
+.seg span{display:block; text-align:center; padding:10px 6px; border-radius:12px; font-weight:700; font-size:.88rem; color:var(--muted); transition:all .2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.seg input:checked + span{background:var(--grad-btn); color:#fff; box-shadow:0 6px 16px rgba(236,72,153,.35)}
+.seg input:focus-visible + span{outline:3px solid var(--cyan); outline-offset:1px}
+.field{margin-top:10px}
+.field > span{display:block; font-size:.8rem; color:var(--muted); font-weight:700; margin-bottom:5px}
+input[type=text],select{width:100%; padding:13px 14px; font-size:1rem; border-radius:14px; border:1px solid var(--stroke); background:var(--surface-2); color:var(--text); font-family:inherit; appearance:none; -webkit-appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 20px) 55%,calc(100% - 14px) 55%; background-size:6px 6px; background-repeat:no-repeat; padding-right:36px}
+select option{color:#1e1b4b}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+@media (max-width:360px){.grid2{grid-template-columns:1fr}}
+.switch{display:flex; align-items:center; gap:12px; margin-top:14px; cursor:pointer}
+.switch input{position:absolute; opacity:0; width:1px; height:1px}
+.switch .tg{width:50px; height:30px; border-radius:20px; background:var(--surface-2); border:1px solid var(--stroke); position:relative; flex:0 0 auto; transition:.2s}
+.switch .tg::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.3); transition:.2s}
+.switch input:checked + .tg{background:var(--grad-btn); border-color:transparent}
+.switch input:checked + .tg::after{left:23px}
+.switch input:focus-visible + .tg{outline:3px solid var(--cyan); outline-offset:2px}
+.switch .tx{font-size:.9rem}
+.switch .tx b{display:block}
+.switch .tx small{color:var(--muted)}
+
+.btn{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px 18px; border:0; border-radius:18px; font-size:1.05rem; font-weight:800; cursor:pointer; background:var(--grad-btn); color:#fff; box-shadow:0 10px 24px rgba(236,72,153,.35); transition:transform .1s, filter .2s; font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn.alt{background:var(--surface-2); color:var(--text); box-shadow:none; border:1px solid var(--stroke)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+button:focus-visible,select:focus-visible,input[type=text]:focus-visible{outline:3px solid var(--cyan); outline-offset:2px}
+.err{margin-top:10px; padding:10px 12px; border-radius:14px; background:rgba(251,113,133,.15); color:var(--ko); font-weight:700; font-size:.9rem}
+.err:empty{display:none}
+
+.scorebar{display:flex; align-items:stretch; gap:8px; margin-bottom:12px}
+.pl{flex:1 1 0; min-width:0; padding:10px 12px; border-radius:18px; background:var(--surface); border:2px solid transparent; transition:.25s; display:flex; align-items:center; gap:8px}
+.pl .av{width:34px; height:34px; border-radius:12px; display:grid; place-items:center; font-size:1.1rem; flex:0 0 auto; background:var(--surface-2)}
+.pl .nm{font-weight:800; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pl .sc{font-size:.75rem; color:var(--muted)}
+.pl .meta{min-width:0}
+.pl.on{border-color:var(--pink); background:var(--surface-2); box-shadow:0 0 0 4px rgba(244,114,182,.18)}
+.vs{align-self:center; font-weight:900; color:var(--muted); font-size:.8rem}
+.chip{display:inline-block; padding:3px 10px; border-radius:99px; background:rgba(251,191,36,.2); color:var(--amber); font-size:.72rem; font-weight:800; letter-spacing:.6px}
+.gameinfo{text-align:center; font-size:.8rem; color:var(--muted); margin-bottom:8px}
+
+.orb{width:170px; height:170px; margin:6px auto 8px; border-radius:50%; position:relative; display:grid; place-items:center; background:var(--grad); box-shadow:0 18px 40px rgba(139,92,246,.45)}
+.orb::before{content:""; position:absolute; inset:8px; border-radius:50%; background:var(--bg1); opacity:.88}
+.orb .in{position:relative; text-align:center}
+.orb .k{font-size:.7rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:800}
+.orb .v{font-size:3.1rem; font-weight:900; line-height:1.05; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+.orb.pop{animation:pop .45s ease}
+@keyframes pop{40%{transform:scale(1.08)}}
+@media (prefers-color-scheme: light){ .orb::before{background:#fff} }
+.turn{text-align:center; font-weight:800; font-size:1rem; margin:2px 0 12px; min-height:1.4em}
+.dots::after{content:""; animation:dots 1.2s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+.eqrow{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px}
+.eqrow .op{font-size:1.5rem; font-weight:900; color:var(--muted)}
+.eqrow .n{font-size:1.5rem; font-weight:900}
+.slot{width:92px; height:62px; border-radius:18px; border:2px solid var(--stroke); background:var(--surface-2); color:var(--text); font-size:1.6rem; font-weight:900; cursor:pointer; font-family:inherit; position:relative}
+.slot.empty{color:var(--muted); font-weight:700; font-size:1.2rem}
+.slot.sel{border-color:var(--pink); box-shadow:0 0 0 4px rgba(244,114,182,.22)}
+.slot.sel::after{content:""; position:absolute; bottom:10px; left:50%; width:18px; height:3px; margin-left:-9px; border-radius:2px; background:var(--pink); animation:blink 1s infinite}
+@keyframes blink{50%{opacity:0}}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+.pad{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.pad button{height:54px; border-radius:16px; border:1px solid var(--stroke); background:var(--surface); color:var(--text); font-size:1.35rem; font-weight:800; cursor:pointer; font-family:inherit; transition:transform .08s}
+.pad button:active{transform:scale(.93); background:var(--surface-2)}
+.pad .go{background:var(--grad-btn); color:#fff; border:0; font-size:1.05rem}
+.pad button:disabled{opacity:.4}
+
+.toast{margin-top:12px; padding:12px 14px; border-radius:16px; font-weight:700; font-size:.92rem; animation:enter .3s ease}
+.toast:empty{display:none}
+.toast.ok{background:rgba(52,211,153,.16); color:var(--ok)}
+.toast.ko{background:rgba(251,113,133,.16); color:var(--ko)}
+.toast.info{background:rgba(34,211,238,.14); color:var(--cyan)}
+@media (prefers-color-scheme: light){ .toast.info{color:#0369a1} }
+
+.tools{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px}
+.tools .btn{padding:12px; font-size:.92rem}
+.hint{margin-top:12px}
+.pairs{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; max-height:200px; overflow:auto}
+.pair{padding:8px 11px; border-radius:12px; border:0; font-weight:800; font-size:.86rem; cursor:pointer; font-family:inherit}
+.pair.good{background:rgba(52,211,153,.2); color:var(--ok)}
+.pair.bad{background:rgba(251,113,133,.18); color:var(--ko)}
+details summary{cursor:pointer; font-weight:800; color:var(--pink); padding:4px 0}
+.primes{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.82rem; color:var(--muted); max-height:140px; overflow:auto; word-break:break-word; margin-top:6px}
+
+.timeline{list-style:none; padding:0; margin:6px 0 0}
+.timeline li{display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--stroke); font-size:.9rem; align-items:flex-start}
+.timeline li:last-child{border-bottom:0}
+.timeline .dot{width:28px; height:28px; border-radius:10px; display:grid; place-items:center; font-size:.8rem; flex:0 0 auto; background:var(--surface-2); font-weight:800}
+.timeline .who{font-weight:800}
+.timeline .calc{color:var(--muted)}
+.empty-note{color:var(--muted); font-size:.88rem; margin:4px 0 0}
+
+.overlay{position:absolute; inset:0; z-index:40; background:rgba(5,5,20,.55); display:flex; align-items:flex-end; animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.sheet{width:100%; background:var(--bg1); border-radius:30px 30px 0 0; padding:22px 18px calc(18px + env(safe-area-inset-bottom)); border-top:1px solid var(--stroke); text-align:center; animation:up .35s cubic-bezier(.2,.9,.3,1.2); max-height:90%; overflow:auto}
+@media (prefers-color-scheme: light){ .sheet{background:#fff} }
+@keyframes up{from{transform:translateY(100%)}}
+.sheet .emo{font-size:3.4rem; line-height:1}
+.sheet h3{font-size:1.5rem; margin:8px 0 6px; font-weight:900}
+.sheet p{color:var(--muted); margin:0 0 6px}
+.sheet .acts{display:grid; gap:8px; margin-top:14px}
+.confetti{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50}
+.confetti i{position:absolute; top:-12px; width:9px; height:14px; border-radius:2px; animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg); opacity:.8}}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none !important; transition:none !important} }
+
+.ex{background:var(--surface-2); border-radius:14px; padding:10px 12px; margin:8px 0; font-weight:800; text-align:center; font-size:.92rem}
+.rule{display:flex; gap:10px; align-items:flex-start; margin:10px 0}
+.rule .n{width:30px; height:30px; border-radius:10px; background:var(--grad-btn); color:#fff; display:grid; place-items:center; font-weight:900; flex:0 0 auto}
+.rule p{margin:2px 0 0}
+/* Crediti: discreti, in fondo alla schermata */
+.foot{margin-top:auto; padding-top:16px; text-align:center; color:var(--muted); font-size:.66rem; line-height:1.5; opacity:.75}
+
+tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--stroke); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px)}
+.tabbar button{flex:1 1 0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 4px; border:0; border-radius:14px; background:transparent; color:var(--muted); font-weight:700; font-size:.72rem; cursor:pointer; font-family:inherit}
+.tabbar button .i{font-size:1.3rem; line-height:1; transition:transform .2s}
+.tabbar button[aria-selected="true"]{color:var(--text); background:var(--surface-2)}
+.tabbar button[aria-selected="true"] .i{transform:translateY(-2px) scale(1.12)}
+</style>
+</head>
+<body>
+<div class="phone" id="gb">
+  <div class="blob b1"></div><div class="blob b2"></div>
+
+  <header class="appbar">
+    <div class="logo" aria-hidden="true">p+q</div>
+    <div class="t">
+      <h1>Goldbach Game</h1>
+      <p id="subtitle">Sfida i numeri primi</p>
+    </div>
+    <button type="button" class="iconbtn hidden" id="btnBack" aria-label="Torna alle impostazioni">⚙︎</button>
+  </header>
+
+  <main id="main">
+    <!-- ============ HOME / SETUP ============ -->
+    <section class="screen" id="scr-home">
+      <div class="card hero">
+        <div class="big" aria-hidden="true">p+q</div>
+        <h2>Il Gioco di Goldbach</h2>
+        <p class="formula">2k = p + q &nbsp;→&nbsp; tocca all'avversario con p − q</p>
+      </div>
+
+      <form class="card" id="setup" novalidate>
+        <div class="lbl">Modalità</div>
+        <div class="seg" role="radiogroup" aria-label="Modalità">
+          <label><input type="radio" name="mode" value="cpu" checked><span>🤖 Contro l'App</span></label>
+          <label><input type="radio" name="mode" value="hvh"><span>👥 2 Giocatori</span></label>
+        </div>
+
+        <div class="grid2">
+          <label class="field"><span id="lbl-n1">Il tuo nome</span><input type="text" id="name1" maxlength="20" placeholder="Tu" autocomplete="off"></label>
+          <label class="field hidden" id="wrap-n2"><span>Giocatore 2</span><input type="text" id="name2" maxlength="20" placeholder="Giocatore 2" autocomplete="off"></label>
+          <label class="field" id="wrap-starter"><span>Chi comincia</span>
+            <select id="starter"><option value="0">Comincio io</option><option value="1">Comincia l'App</option></select>
+          </label>
+        </div>
+
+        <div id="cpu-opts">
+          <div class="lbl">Livello dell'App</div>
+          <div class="seg" role="radiogroup" aria-label="Livello">
+            <label><input type="radio" name="level" value="easy"><span>😊 Facile</span></label>
+            <label><input type="radio" name="level" value="medium" checked><span>🧐 Medio</span></label>
+            <label><input type="radio" name="level" value="hard"><span>🔥 Difficile</span></label>
+          </div>
+        </div>
+
+        <div class="lbl">Numero di partenza</div>
+        <div class="seg" role="radiogroup" aria-label="Numero di partenza">
+          <label><input type="radio" name="startmode" value="rand" checked><span>🎲 Casuale</span></label>
+          <label><input type="radio" name="startmode" value="manual"><span>✍️ Lo scelgo io</span></label>
+        </div>
+        <label class="field" id="wrap-range"><span>Intervallo</span>
+          <select id="range">
+            <option value="30">da 6 a 30 · per iniziare</option>
+            <option value="100" selected>da 6 a 100</option>
+            <option value="500">da 6 a 500</option>
+            <option value="1000">da 6 a 1000</option>
+            <option value="10000">da 6 a 10000 · esperti</option>
+          </select>
+        </label>
+        <label class="field hidden" id="wrap-manual"><span>Numero pari maggiore di 4 (max 10000)</span>
+          <input type="text" id="manualN" inputmode="numeric" pattern="[0-9]*" placeholder="es. 22" autocomplete="off">
+        </label>
+
+        <label class="switch">
+          <input type="checkbox" id="prova">
+          <span class="tg" aria-hidden="true"></span>
+          <span class="tx"><b>🧪 Partita di prova</b><small>Suggerimenti, annulla mossa ed elenco dei primi</small></span>
+        </label>
+
+        <div class="err" id="setup-msg" role="alert"></div>
+        <div style="margin-top:16px"><button type="submit" class="btn">▶&nbsp; Inizia a giocare</button></div>
+      </form>
+    </section>
+
+    <!-- ============ PARTITA ============ -->
+    <section class="screen hidden" id="scr-game">
+      <div class="scorebar">
+        <div class="pl" id="pl0"><div class="av" id="pl0a">🙂</div><div class="meta"><div class="nm" id="pl0n"></div><div class="sc" id="pl0s"></div></div></div>
+        <div class="vs">VS</div>
+        <div class="pl" id="pl1"><div class="av" id="pl1a">🤖</div><div class="meta"><div class="nm" id="pl1n"></div><div class="sc" id="pl1s"></div></div></div>
+      </div>
+      <div class="gameinfo" id="gameinfo"></div>
+
+      <div class="orb" id="orb"><div class="in"><div class="k">Numero</div><div class="v" id="curN">–</div></div></div>
+      <div class="turn" id="turn" aria-live="polite"></div>
+
+      <div id="moveArea">
+        <div class="eqrow" id="eqrow">
+          <span class="n" id="eqN"></span><span class="op">=</span>
+          <button type="button" class="slot sel" id="slotP" aria-label="Primo numero primo p">p</button>
+          <span class="op">+</span>
+          <button type="button" class="slot" id="slotQ" aria-label="Secondo numero primo q">q</button>
+        </div>
+        <div class="pad" id="pad">
+          <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+          <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+          <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+          <button type="button" data-k="del" aria-label="Cancella">⌫</button><button type="button" data-k="0">0</button>
+          <button type="button" data-k="go" class="go" aria-label="Gioca la mossa">Gioca ✓</button>
+        </div>
+      </div>
+
+      <div class="toast" id="msg" role="status" aria-live="polite"></div>
+
+      <div class="tools" id="provaTools">
+        <button type="button" class="btn alt" id="btnHint">💡 Suggerimento</button>
+        <button type="button" class="btn alt" id="btnUndo">↩️ Annulla</button>
+      </div>
+      <div class="card hint hidden" id="hint" aria-live="polite">
+        <div style="font-size:.88rem" id="hintTitle"></div>
+        <div class="pairs" id="hintPairs"></div>
+      </div>
+      <details class="card" id="primesBox" style="margin-top:12px">
+        <summary>🔢 Numeri primi fino a <span id="primesMax"></span></summary>
+        <div class="primes" id="primesList"></div>
+      </details>
+
+      <div class="card" style="margin-top:12px">
+        <h2 style="font-size:1rem">📜 Mosse della partita</h2>
+        <ol class="timeline" id="history"></ol>
+        <p class="empty-note" id="historyEmpty">Nessuna mossa ancora.</p>
+      </div>
+    </section>
+
+    <!-- ============ REGOLE ============ -->
+    <section class="screen hidden" id="scr-rules">
+      <div class="card">
+        <h2>📘 Come si gioca</h2>
+        <div class="rule"><div class="n">1</div><p>Ti viene dato un numero pari <b>2k</b> maggiore di 4. Scrivilo come somma di due primi <b>2k = p + q</b>: ti basta digitare <b>p</b> e <b>q</b>.</p></div>
+        <div class="rule"><div class="n">2</div><p>I due primi sono dispari, quindi la loro differenza <b>2h = p − q</b> è ancora un numero pari. Con quel numero gioca l'avversario.</p></div>
+        <div class="ex">22 = 17 + 5 → 17 − 5 = 12 → tocca all'avversario</div>
+        <div class="rule"><div class="n">3</div><p>Si gioca a turno con numeri sempre più piccoli fino ad arrivare a <b>0</b> o a <b>2</b>.</p></div>
+        <div class="ex" style="color:var(--ok)">✅ Vinci se arrivi a 0 (due primi uguali, es. 22 = 11 + 11)</div>
+        <div class="ex" style="color:var(--ko)">❌ Perdi se ti tocca giocare con 2</div>
+      </div>
+      <div class="card">
+        <h2>⚠️ Le scelte contano!</h2>
+        <p>Spesso ci sono più possibilità e non portano tutte allo stesso finale. Con 22:</p>
+        <ul>
+          <li><b>17 + 5</b> → l'avversario gioca 12 = 7 + 5 → a te resta 2: <b>perdi</b>.</li>
+          <li><b>19 + 3</b> → l'avversario ha 16: con 13 + 3 vinci con 10 = 5 + 5; con 11 + 5 vinci con 6 = 3 + 3.</li>
+          <li><b>11 + 11</b> → differenza 0: <b>vinci subito</b>!</li>
+        </ul>
+        <p>L'abilità sta nello scegliere i primi giusti, pensando ai numeri con cui costringerai l'avversario a giocare.</p>
+        <p>Se hai ancora dubbi, fai prima una <b>partita di prova</b> e poi gioca sul serio. <b>Buon divertimento!</b></p>
+      </div>
+    </section>
+
+    <!-- ============ CONGETTURA ============ -->
+    <section class="screen hidden" id="scr-info">
+      <div class="card">
+        <h2>🧠 La congettura di Goldbach</h2>
+        <p>Afferma che <b>ogni numero pari maggiore o uguale a 4 si può scrivere come somma di due numeri primi</b>. Per i numeri usati in questo gioco è vera.</p>
+        <div class="ex">22 = 17 + 5 · 19 + 3 · 11 + 11</div>
+        <h3>Perché "congettura"?</h3>
+        <p>Nessun matematico è ancora riuscito a dimostrarla, anche se è stata formulata secoli fa. Nasce da una lettera che Christian Goldbach scrisse nel 1742 a Eulero, forse uno dei cinque più grandi matematici della storia, sul legame tra la distribuzione dei numeri primi e i numeri pari.</p>
+        <p>Non è dimostrata, ma i matematici scommetterebbero sulla sua verità. Sono stati dimostrati molti <b>risultati parziali</b>: per esempio, ogni numero pari abbastanza grande è somma di un primo e di un numero prodotto di non più di due fattori primi. Inoltre la congettura è stata <b>verificata per numeri dell'ordine di 10<sup>18</sup></b>.</p>
+        <h3>Più modi per lo stesso numero</h3>
+        <div class="ex">26 = 23 + 3 · 19 + 7 · 13 + 13</div>
+      </div>
+    </section>
+
+    <p class="foot" id="credits">Ideato dal Professore Giancarlo Palomba<br>Realizzato dalla Professoressa Giovanna Montanaro</p>
+  </main>
+
+  <nav class="tabbar" role="tablist" aria-label="Navigazione">
+    <button type="button" role="tab" id="tab-info" aria-selected="false"><span class="i">🧠</span>Congettura</button>
+    <button type="button" role="tab" id="tab-rules" aria-selected="false"><span class="i">📘</span>Regole</button>
+    <button type="button" role="tab" id="tab-play" aria-selected="true"><span class="i">🎮</span>Gioca</button>
+  </nav>
+
+  <div class="overlay hidden" id="overlay" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="sheet">
+      <div class="emo" id="endEmo">🏆</div>
+      <h3 id="endTitle"></h3>
+      <p id="endText"></p>
+      <p id="endAnalysis" style="font-size:.85rem"></p>
+      <div class="acts">
+        <button type="button" class="btn" id="btnRematch">🔁 Rivincita con lo stesso numero</button>
+        <button type="button" class="btn alt" id="btnNewRand">🎲 Nuova partita</button>
+        <button type="button" class="btn alt" id="btnCloseEnd">📜 Rivedi le mosse</button>
+      </div>
+    </div>
+  </div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.getElementById("gb");
+  function $(id){ return document.getElementById(id); }
+
+  var MAX = 10000;
+  var isP = new Uint8Array(MAX + 1);
+  (function(){
+    var i, j;
+    for (i = 2; i <= MAX; i++) isP[i] = 1;
+    for (i = 2; i * i <= MAX; i++) if (isP[i]) for (j = i * i; j <= MAX; j += i) isP[j] = 0;
+  })();
+  var winA = new Uint8Array(MAX + 1), computedTo = -1;
+  function ensure(n){
+    for (var m = computedTo + 1; m <= n; m++){
+      if (m % 2 === 1 || m < 4){ winA[m] = 0; continue; }
+      if (m === 4){ winA[m] = 1; continue; }
+      var w = 0;
+      for (var q = 3; q <= m / 2; q += 2) if (isP[q] && isP[m - q] && !winA[m - 2 * q]){ w = 1; break; }
+      winA[m] = w;
+    }
+    if (n > computedTo) computedTo = n;
+  }
+  function isWin(n){ if (n < 4) return false; ensure(n); return winA[n] === 1; }
+  function pairs(n){
+    if (n === 4) return [[2, 2]];
+    var r = [];
+    for (var q = 3; q <= n / 2; q += 2) if (isP[q] && isP[n - q]) r.push([n - q, q]);
+    return r;
+  }
+  function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+  function randEven(max){ var lo = 3, hi = Math.floor(max / 2); return 2 * (lo + Math.floor(Math.random() * (hi - lo + 1))); }
+
+  var S = null, G = null, cpuTimer = null, scores = [0, 0];
+  var inp = { p: "", q: "" }, slot = "p";
+  var current = "play";
+
+  function show(which){
+    current = which;
+    var map = { play: "tab-play", rules: "tab-rules", info: "tab-info" };
+    Object.keys(map).forEach(function(k){ $(map[k]).setAttribute("aria-selected", k === which ? "true" : "false"); });
+    var inGame = !!G && !$("scr-game").dataset.off;
+    var gameVisible = which === "play" && inGame;
+    $("scr-home").classList.toggle("hidden", !(which === "play" && !inGame));
+    $("scr-game").classList.toggle("hidden", !gameVisible);
+    $("scr-rules").classList.toggle("hidden", which !== "rules");
+    $("scr-info").classList.toggle("hidden", which !== "info");
+    $("btnBack").classList.toggle("hidden", !gameVisible);
+    $("credits").classList.toggle("hidden", gameVisible);
+    $("subtitle").textContent = which === "rules" ? "Come si gioca" : which === "info" ? "La congettura" : (inGame ? "Partita in corso" : "Sfida i numeri primi");
+    $("main").scrollTop = 0;
+  }
+  $("tab-play").addEventListener("click", function(){ show("play"); });
+  $("tab-rules").addEventListener("click", function(){ show("rules"); });
+  $("tab-info").addEventListener("click", function(){ show("info"); });
+
+  function radio(name){
+    var r = root.querySelectorAll('input[name="' + name + '"]');
+    for (var i = 0; i < r.length; i++) if (r[i].checked) return r[i].value;
+    return null;
+  }
+  function refreshSetup(){
+    var cpu = radio("mode") === "cpu";
+    $("wrap-n2").classList.toggle("hidden", cpu);
+    $("cpu-opts").classList.toggle("hidden", !cpu);
+    $("lbl-n1").textContent = cpu ? "Il tuo nome" : "Giocatore 1";
+    $("name1").placeholder = cpu ? "Tu" : "Giocatore 1";
+    var st = $("starter"), v = st.value;
+    st.options[0].text = cpu ? "Comincio io" : "Giocatore 1";
+    st.options[1].text = cpu ? "Comincia l'App" : "Giocatore 2";
+    st.value = v;
+    var manual = radio("startmode") === "manual";
+    $("wrap-manual").classList.toggle("hidden", !manual);
+    $("wrap-range").classList.toggle("hidden", manual);
+  }
+  root.querySelectorAll('input[name="mode"],input[name="startmode"]').forEach(function(el){ el.addEventListener("change", refreshSetup); });
+  refreshSetup();
+
+  function clean(v, d){ v = (v || "").trim(); return v ? v.slice(0, 20) : d; }
+
+  $("setup").addEventListener("submit", function(e){
+    e.preventDefault();
+    var m = $("setup-msg"); m.textContent = "";
+    var cpu = radio("mode") === "cpu", startN = null;
+    if (radio("startmode") === "manual"){
+      var raw = $("manualN").value.trim();
+      if (!/^\d+$/.test(raw)){ m.textContent = "Inserisci un numero intero pari (es. 22)."; return; }
+      startN = parseInt(raw, 10);
+      if (startN % 2){ m.textContent = startN + " è dispari: serve un numero pari."; return; }
+      if (startN <= 4){ m.textContent = "Il numero deve essere maggiore di 4."; return; }
+      if (startN > MAX){ m.textContent = "Il numero massimo ammesso è " + MAX + "."; return; }
+    }
+    S = {
+      cpu: cpu,
+      names: cpu ? [clean($("name1").value, "Tu"), "App"] : [clean($("name1").value, "Giocatore 1"), clean($("name2").value, "Giocatore 2")],
+      level: radio("level") || "medium",
+      starter: parseInt($("starter").value, 10) || 0,
+      manualN: startN, range: parseInt($("range").value, 10) || 100,
+      prova: $("prova").checked
+    };
+    scores = [0, 0];
+    $("pl0a").textContent = cpu ? "🙂" : "🦊";
+    $("pl1a").textContent = cpu ? "🤖" : "🐼";
+    delete $("scr-game").dataset.off;
+    newGame(S.manualN || randEven(S.range));
+  });
+
+  function newGame(n){
+    clearTimeout(cpuTimer);
+    G = { start: n, n: n, turn: S.starter, history: [], over: false, undo: [] };
+    ensure(n);
+    inp = { p: "", q: "" }; slot = "p";
+    setMsg("", "");
+    $("hint").classList.add("hidden");
+    $("overlay").classList.add("hidden");
+    $("pl0n").textContent = S.names[0];
+    $("pl1n").textContent = S.names[1];
+    var gi = $("gameinfo");
+    gi.textContent = (S.cpu ? "Contro l'App · " + { easy: "Facile", medium: "Medio", hard: "Difficile" }[S.level] : "Due giocatori") + " · partenza " + n + " ";
+    if (S.prova){ var c = document.createElement("span"); c.className = "chip"; c.textContent = "PROVA"; gi.appendChild(c); }
+    $("provaTools").classList.toggle("hidden", !S.prova);
+    $("primesBox").classList.toggle("hidden", !S.prova);
+    show("play");
+    render(true);
+    maybeCpu();
+  }
+
+  function setMsg(t, cls){ var m = $("msg"); m.textContent = t; m.className = "toast" + (cls ? " " + cls : ""); }
+  function human(){ return G && !G.over && !(S.cpu && G.turn === 1); }
+
+  function renderSlots(){
+    ["p", "q"].forEach(function(k){
+      var b = $(k === "p" ? "slotP" : "slotQ");
+      b.textContent = inp[k] || k;
+      b.classList.toggle("empty", !inp[k]);
+      b.classList.toggle("sel", slot === k && human());
+    });
+  }
+
+  function render(popNum){
+    $("curN").textContent = G.over ? "🏁" : String(G.n);
+    if (popNum){ var o = $("orb"); o.classList.remove("pop"); void o.offsetWidth; o.classList.add("pop"); }
+    $("eqN").textContent = String(G.n);
+    for (var i = 0; i < 2; i++){
+      $("pl" + i).classList.toggle("on", !G.over && G.turn === i);
+      $("pl" + i + "s").textContent = "🏆 " + scores[i];
+    }
+    var t = $("turn"); t.classList.remove("dots");
+    if (G.over) t.textContent = "Partita terminata";
+    else if (S.cpu && G.turn === 1){ t.textContent = "🤖 L'App sta pensando"; t.classList.add("dots"); }
+    else if (S.cpu) t.textContent = "Tocca a te! Scomponi " + G.n;
+    else t.textContent = "Tocca a " + S.names[G.turn] + "! Scomponi " + G.n;
+
+    var h = human();
+    $("moveArea").classList.toggle("hidden", G.over);
+    root.querySelectorAll("#pad button, .slot").forEach(function(b){ b.disabled = !h; });
+    $("btnHint").disabled = !h;
+    $("btnUndo").disabled = G.undo.length === 0;
+    renderSlots();
+
+    var ol = $("history"); ol.textContent = "";
+    G.history.forEach(function(x, idx){
+      var li = document.createElement("li");
+      var d = document.createElement("span"); d.className = "dot"; d.textContent = String(idx + 1);
+      var body = document.createElement("div");
+      var w = document.createElement("div"); w.className = "who"; w.textContent = S.names[x.player];
+      var c = document.createElement("div"); c.className = "calc";
+      c.textContent = x.n + " = " + x.p + " + " + x.q + "  →  " + x.p + " − " + x.q + " = " + x.d;
+      body.appendChild(w); body.appendChild(c);
+      li.appendChild(d); li.appendChild(body); ol.appendChild(li);
+    });
+    $("historyEmpty").classList.toggle("hidden", G.history.length > 0);
+
+    if (S.prova && !G.over){
+      $("primesMax").textContent = String(G.n);
+      var ps = [];
+      for (var k = 2; k <= G.n; k++) if (isP[k]) ps.push(k);
+      $("primesList").textContent = ps.join(", ");
+    }
+  }
+
+  function applyMove(p, q){
+    if (p < q){ var t = p; p = q; q = t; }
+    var mover = G.turn, other = 1 - mover, n = G.n, d = p - q;
+    G.history.push({ player: mover, n: n, p: p, q: q, d: d });
+    $("hint").classList.add("hidden");
+    if (d < 4){
+      G.over = true; scores[mover]++;
+      render(true);
+      setTimeout(function(){ showEnd(mover, other, n, p, q, d); }, 350);
+    } else {
+      G.n = d; G.turn = other;
+      render(true);
+      maybeCpu();
+    }
+  }
+
+  function showEnd(mover, other, n, p, q, d){
+    var good = !S.cpu || mover === 0;
+    $("endEmo").textContent = S.cpu ? (mover === 0 ? "🏆" : "🤖") : "🏆";
+    $("endTitle").textContent = S.cpu ? (mover === 0 ? "Hai vinto!" : "Ha vinto l'App!") : "Vince " + S.names[mover] + "!";
+    $("endText").textContent = n + " = " + p + " + " + q + ": " + (d === 0
+      ? "la differenza è 0, quindi " + S.names[mover] + " vince."
+      : "la differenza è 2 e " + S.names[other] + " non può scomporre il 2.");
+    $("endAnalysis").textContent = S.prova
+      ? "Analisi: partendo da " + G.start + ", chi ha iniziato (" + S.names[S.starter] + ") " + (isWin(G.start) ? "aveva una strategia vincente." : "non aveva una strategia vincente contro un avversario perfetto.")
+      : "";
+    $("overlay").classList.remove("hidden");
+    if (good) confetti();
+    $("btnRematch").focus();
+  }
+
+  function confetti(){
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var box = $("confetti"), cols = ["#f472b6", "#8b5cf6", "#22d3ee", "#fbbf24", "#34d399"];
+    box.textContent = "";
+    for (var i = 0; i < 60; i++){
+      var c = document.createElement("i");
+      c.style.left = (Math.random() * 100) + "%";
+      c.style.background = cols[i % cols.length];
+      c.style.animationDuration = (1.8 + Math.random() * 1.6) + "s";
+      c.style.animationDelay = (Math.random() * 0.4) + "s";
+      box.appendChild(c);
+    }
+    setTimeout(function(){ box.textContent = ""; }, 4000);
+  }
+
+  function maybeCpu(){
+    if (!S.cpu || G.over || G.turn !== 1) return;
+    clearTimeout(cpuTimer);
+    cpuTimer = setTimeout(function(){
+      if (G.over || G.turn !== 1) return;
+      var n = G.n, ps = pairs(n);
+      var good = ps.filter(function(x){ return !isWin(x[0] - x[1]); });
+      var prob = S.level === "hard" ? 1 : S.level === "medium" ? 0.6 : 0;
+      var ch = (good.length && Math.random() < prob) ? pick(good) : pick(ps);
+      setMsg("🤖 L'App ha giocato " + n + " = " + ch[0] + " + " + ch[1] + "  →  " + (ch[0] - ch[1]), "info");
+      applyMove(ch[0], ch[1]);
+    }, 1100);
+  }
+
+  function shake(){ var e = $("eqrow"); e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); if (navigator.vibrate) try{ navigator.vibrate(120); }catch(_){} }
+
+  function submit(){
+    if (!human()) return;
+    if (!inp.p || !inp.q){ setMsg("Inserisci entrambi i numeri p e q.", "ko"); shake(); slot = inp.p ? "q" : "p"; renderSlots(); return; }
+    var p = parseInt(inp.p, 10), q = parseInt(inp.q, 10), n = G.n;
+    if (p + q !== n){ setMsg(p + " + " + q + " = " + (p + q) + ", ma deve fare " + n + ". Riprova!", "ko"); shake(); return; }
+    var bad = [];
+    if (!(p <= MAX && isP[p])) bad.push(p);
+    if (!(q <= MAX && isP[q]) && q !== p) bad.push(q);
+    if (bad.length){ setMsg((bad.length === 1 ? bad[0] + " non è un numero primo." : bad.join(" e ") + " non sono numeri primi.") + " Riprova!", "ko"); shake(); return; }
+    G.undo.push({ n: G.n, turn: G.turn, hlen: G.history.length, score: scores.slice() });
+    var d = Math.abs(p - q);
+    setMsg(d >= 4 ? "✅ Mossa valida! Ora " + (S.cpu ? "l'App gioca" : S.names[1 - G.turn] + " gioca") + " con " + d + "." : "", "ok");
+    inp = { p: "", q: "" }; slot = "p";
+    applyMove(p, q);
+  }
+
+  function key(k){
+    if (!human()) return;
+    if (k === "go"){ submit(); return; }
+    if (k === "del"){
+      if (inp[slot]) inp[slot] = inp[slot].slice(0, -1);
+      else if (slot === "q"){ slot = "p"; }
+    } else {
+      if (inp[slot].length >= 5) return;
+      if (inp[slot] === "" && k === "0") return;
+      inp[slot] += k;
+    }
+    renderSlots();
+  }
+  $("pad").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-k]"); if (b && !b.disabled) key(b.getAttribute("data-k"));
+  });
+  $("slotP").addEventListener("click", function(){ slot = "p"; renderSlots(); });
+  $("slotQ").addEventListener("click", function(){ slot = "q"; renderSlots(); });
+  document.addEventListener("keydown", function(e){
+    if (current !== "play" || !human() || !$("overlay").classList.contains("hidden")) return;
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select") return;
+    if (/^[0-9]$/.test(e.key)){ key(e.key); e.preventDefault(); }
+    else if (e.key === "Backspace"){ key("del"); e.preventDefault(); }
+    else if (e.key === "Enter" && e.target.closest && !e.target.closest("button")){ submit(); e.preventDefault(); }
+    else if (e.key === "+" || e.key === " "){ slot = slot === "p" ? "q" : "p"; renderSlots(); e.preventDefault(); }
+  });
+
+  $("btnHint").addEventListener("click", function(){
+    if (!human()) return;
+    var n = G.n, ps = pairs(n), box = $("hintPairs"), ng = 0;
+    box.textContent = "";
+    ps.forEach(function(x){
+      var d = x[0] - x[1], good = !isWin(d); if (good) ng++;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "pair " + (good ? "good" : "bad");
+      b.textContent = x[0] + " + " + x[1] + " → " + d + (good ? " ✓" : " ✗");
+      b.setAttribute("aria-label", x[0] + " più " + x[1] + ", differenza " + d + (good ? ", mossa vincente" : ", mossa rischiosa"));
+      b.addEventListener("click", function(){ inp = { p: String(x[0]), q: String(x[1]) }; slot = "q"; renderSlots(); });
+      box.appendChild(b);
+    });
+    $("hintTitle").textContent = "💡 " + n + " si scrive in " + ps.length + (ps.length === 1 ? " modo. " : " modi. ") +
+      (ng ? "In verde le " + ng + " mosse vincenti (se poi continui a giocare bene)." : "Nessuna mossa è sicura: spera in un errore dell'avversario!") + " Tocca una coppia per inserirla.";
+    $("hint").classList.remove("hidden");
+  });
+
+  $("btnUndo").addEventListener("click", function(){
+    if (!G.undo.length) return;
+    clearTimeout(cpuTimer);
+    var s = G.undo.pop();
+    G.n = s.n; G.turn = s.turn; G.history.length = s.hlen; G.over = false; scores = s.score;
+    inp = { p: "", q: "" }; slot = "p";
+    $("overlay").classList.add("hidden"); $("hint").classList.add("hidden");
+    setMsg("↩️ Mossa annullata: tocca di nuovo " + (S.cpu ? "a te" : "a " + S.names[G.turn]) + " con " + G.n + ".", "info");
+    render(true);
+  });
+
+  $("btnRematch").addEventListener("click", function(){ newGame(G.start); });
+  $("btnNewRand").addEventListener("click", function(){ newGame(S.manualN ? S.manualN : randEven(S.range)); });
+  $("btnCloseEnd").addEventListener("click", function(){ $("overlay").classList.add("hidden"); });
+  $("btnBack").addEventListener("click", function(){
+    clearTimeout(cpuTimer);
+    $("overlay").classList.add("hidden");
+    $("scr-game").dataset.off = "1";
+    show("play");
+  });
+})();
+</script>
+</body>
+</html>
