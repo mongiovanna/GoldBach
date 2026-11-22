@@ -41,10 +41,10 @@ body{
   background:radial-gradient(1200px 600px at 10% -10%,var(--bg2),transparent 60%),
              radial-gradient(900px 600px at 110% 110%,var(--bg3),transparent 60%), var(--bg1);
   background-attachment:fixed;
-  display:flex; justify-content:center; align-items:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
   overscroll-behavior:none;
 }
-.phone{position:relative; width:100%; height:100dvh; max-width:440px; display:flex; flex-direction:column; overflow:hidden}
+.phone{position:relative; width:100%; height:100vh; height:100dvh; max-width:440px; display:flex; flex-direction:column; overflow:hidden}
 @media (min-width:600px) and (min-height:760px){
   .phone{
     height:min(900px,94vh); border-radius:44px; border:10px solid #0b0b12;
@@ -58,14 +58,14 @@ body{
 .blob.b1{width:240px; height:240px; background:var(--pink); top:-80px; right:-80px}
 .blob.b2{width:260px; height:260px; background:var(--cyan); bottom:60px; left:-120px; opacity:.25}
 
-.appbar{position:relative; z-index:5; display:flex; align-items:center; gap:12px; padding:calc(env(safe-area-inset-top) + 14px) 18px 12px}
+.appbar{position:relative; z-index:5; flex:0 0 auto; display:flex; align-items:center; gap:12px; padding:calc(env(safe-area-inset-top) + 14px) 18px 12px}
 .logo{width:44px; height:44px; border-radius:14px; background:var(--grad); display:grid; place-items:center; font-weight:900; color:#fff; font-size:.95rem; box-shadow:0 6px 18px rgba(236,72,153,.45); flex:0 0 auto}
 .appbar .t{min-width:0}
 .appbar h1{margin:0; font-size:1.15rem; font-weight:800; letter-spacing:.2px}
 .appbar p{margin:0; font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .iconbtn{margin-left:auto; width:42px; height:42px; border-radius:14px; border:1px solid var(--stroke); background:var(--surface); color:var(--text); font-size:1.15rem; cursor:pointer; flex:0 0 auto}
 
-main{position:relative; z-index:2; flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:4px 16px 18px; display:flex; flex-direction:column}
+main{position:relative; z-index:2; flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:4px 16px 18px; display:flex; flex-direction:column}
 .screen{animation:enter .35s ease both}
 @keyframes enter{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
 .hidden{display:none !important}
@@ -198,14 +198,14 @@ details summary{cursor:pointer; font-weight:800; color:var(--pink); padding:4px 
 .rule{display:flex; gap:10px; align-items:flex-start; margin:10px 0}
 .rule .n{width:30px; height:30px; border-radius:10px; background:var(--grad-btn); color:#fff; display:grid; place-items:center; font-weight:900; flex:0 0 auto}
 .rule p{margin:2px 0 0}
-/* Crediti: discreti, in fondo alla schermata */
 .foot{margin-top:auto; padding-top:16px; text-align:center; color:var(--muted); font-size:.66rem; line-height:1.5; opacity:.75}
 
-tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--stroke); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px)}
-.tabbar button{flex:1 1 0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 4px; border:0; border-radius:14px; background:transparent; color:var(--muted); font-weight:700; font-size:.72rem; cursor:pointer; font-family:inherit}
-.tabbar button .i{font-size:1.3rem; line-height:1; transition:transform .2s}
-.tabbar button[aria-selected="true"]{color:var(--text); background:var(--surface-2)}
-.tabbar button[aria-selected="true"] .i{transform:translateY(-2px) scale(1.12)}
+/* Barra di navigazione: sempre orizzontale (griglia a 3 colonne) */
+.tabbar{position:relative; z-index:10; flex:0 0 auto; width:100%; display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:auto; gap:4px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--stroke); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px)}
+.tabbar > button{width:100%; min-width:0; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:7px 4px; border:0; border-radius:14px; background:transparent; color:var(--muted); font-weight:700; font-size:.72rem; cursor:pointer; font-family:inherit; white-space:nowrap}
+.tabbar > button .i{display:block; font-size:1.3rem; line-height:1; transition:transform .2s}
+.tabbar > button[aria-selected="true"]{color:var(--text); background:var(--surface-2)}
+.tabbar > button[aria-selected="true"] .i{transform:translateY(-2px) scale(1.12)}
 </style>
 </head>
 <body>
@@ -222,7 +222,6 @@ tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px ca
   </header>
 
   <main id="main">
-    <!-- ============ HOME / SETUP ============ -->
     <section class="screen" id="scr-home">
       <div class="card hero">
         <div class="big" aria-hidden="true">p+q</div>
@@ -283,7 +282,6 @@ tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px ca
       </form>
     </section>
 
-    <!-- ============ PARTITA ============ -->
     <section class="screen hidden" id="scr-game">
       <div class="scorebar">
         <div class="pl" id="pl0"><div class="av" id="pl0a">🙂</div><div class="meta"><div class="nm" id="pl0n"></div><div class="sc" id="pl0s"></div></div></div>
@@ -333,7 +331,6 @@ tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px ca
       </div>
     </section>
 
-    <!-- ============ REGOLE ============ -->
     <section class="screen hidden" id="scr-rules">
       <div class="card">
         <h2>📘 Come si gioca</h2>
@@ -357,7 +354,6 @@ tabbar{position:relative; z-index:10; display:flex; gap:4px; padding:8px 10px ca
       </div>
     </section>
 
-    <!-- ============ CONGETTURA ============ -->
     <section class="screen hidden" id="scr-info">
       <div class="card">
         <h2>🧠 La congettura di Goldbach</h2>
